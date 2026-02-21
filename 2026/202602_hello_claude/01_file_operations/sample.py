@@ -3,12 +3,12 @@
 
 def add(a, b):
     """2つの数を足す（バグあり）"""
-    return a - b  # BUG: should be a + b
+    return a + b
 
 
-def greet():
-    """挨拶を返す（未実装: name引数を追加してほしい）"""
-    return "Hello, World!"
+def greet(name):
+    """挨拶を返す"""
+    return f"Hello, {name}!"
 
 
 def multiply(a, b):
