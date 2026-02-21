@@ -7,11 +7,18 @@ from config import OUTPUT_DIR
 
 # ソースごとのカラーマッピング
 SOURCE_COLORS = {
-    "NHK ビジネス": {"bg": "#1a237e", "badge": "#3949ab"},
-    "東洋経済": {"bg": "#e65100", "badge": "#f57c00"},
+    # マーケット系 - 赤系
     "Bloomberg": {"bg": "#b71c1c", "badge": "#e53935"},
-    "The Guardian": {"bg": "#1b5e20", "badge": "#43a047"},
-    "BBC Business": {"bg": "#880e4f", "badge": "#e91e8c"},
+    "FT Markets": {"bg": "#bf360c", "badge": "#f4511e"},
+    "MarketWatch": {"bg": "#880e4f", "badge": "#d81b60"},
+    "Investing.com": {"bg": "#4a148c", "badge": "#7b1fa2"},
+    # 国際・政治系 - 緑系
+    "BBC Business": {"bg": "#1b5e20", "badge": "#388e3c"},
+    "The Guardian": {"bg": "#004d40", "badge": "#00796b"},
+    # 日本語系 - 青系
+    "NHK 経済": {"bg": "#1a237e", "badge": "#3949ab"},
+    "NHK 国際": {"bg": "#0d47a1", "badge": "#1976d2"},
+    "東洋経済": {"bg": "#e65100", "badge": "#f57c00"},
 }
 DEFAULT_COLOR = {"bg": "#37474f", "badge": "#607d8b"}
 
