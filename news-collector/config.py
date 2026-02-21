@@ -3,10 +3,16 @@
 # ニュースソース定義
 NEWS_SOURCES = [
     {
-        "name": "株探",
-        "url": "https://kabutan.jp/rss/news",
+        "name": "NHK ビジネス",
+        "url": "https://www.nhk.or.jp/rss/news/cat5.xml",
         "language": "ja",
-        "category": "日本株・経済",
+        "category": "国内経済",
+    },
+    {
+        "name": "東洋経済",
+        "url": "https://toyokeizai.net/list/feed/rss",
+        "language": "ja",
+        "category": "日本ビジネス",
     },
     {
         "name": "Bloomberg",

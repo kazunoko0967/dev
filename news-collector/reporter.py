@@ -7,7 +7,8 @@ from config import OUTPUT_DIR
 
 # ソースごとのカラーマッピング
 SOURCE_COLORS = {
-    "株探": {"bg": "#1a237e", "badge": "#3949ab"},
+    "NHK ビジネス": {"bg": "#1a237e", "badge": "#3949ab"},
+    "東洋経済": {"bg": "#e65100", "badge": "#f57c00"},
     "Bloomberg": {"bg": "#b71c1c", "badge": "#e53935"},
     "The Guardian": {"bg": "#1b5e20", "badge": "#43a047"},
     "BBC Business": {"bg": "#880e4f", "badge": "#e91e8c"},
