@@ -1,5 +1,6 @@
 """エントリーポイント"""
 
+import argparse
 import glob
 import os
 import subprocess
@@ -43,6 +44,10 @@ def cleanup_old_reports() -> None:
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--no-browser", action="store_true", help="ブラウザを開かない（CI/GitHub Actions用）")
+    args = parser.parse_args()
+
     print("=== ニュース収集開始 ===")
 
     # 1. RSS取得
@@ -69,13 +74,14 @@ def main():
     print("\n=== アーカイブ整理 ===")
     cleanup_old_reports()
 
-    # 6. ブラウザで自動オープン
-    print("\n=== ブラウザで表示 ===")
-    try:
-        subprocess.run(["open", filepath], check=True)
-        print(f"ブラウザで開きました: {filepath}")
-    except Exception as e:
-        print(f"ブラウザを開けませんでした。手動で開いてください: {filepath}\nエラー: {e}")
+    # 6. ブラウザで自動オープン（ローカル実行時のみ）
+    if not args.no_browser:
+        print("\n=== ブラウザで表示 ===")
+        try:
+            subprocess.run(["open", filepath], check=True)
+            print(f"ブラウザで開きました: {filepath}")
+        except Exception as e:
+            print(f"ブラウザを開けませんでした。手動で開いてください: {filepath}\nエラー: {e}")
 
     print("\n=== 完了 ===")
 
