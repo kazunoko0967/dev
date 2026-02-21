@@ -1,5 +1,6 @@
-"""Claude Haiku 4.5 によるAI要約モジュール"""
+"""Claude Haiku 4.5 によるAI要約・材料分析モジュール"""
 
+import json
 import anthropic
 import os
 
@@ -12,27 +13,32 @@ if not api_key:
 client = anthropic.Anthropic(api_key=api_key)
 
 
-def summarize_article(article: dict) -> str:
-    """記事を日本語で要約する"""
+def analyze_article(article: dict) -> dict:
+    """記事を要約し、好材料・悪材料・企業名を分析してJSONで返す"""
     title = article["title"]
     raw = article["raw_summary"]
     source = article["source"]
 
     prompt = f"""あなたはプロのトレーダー向けニュースアナリストです。
-以下のニュース記事を日本語で{SUMMARY_MAX_CHARS}文字以内に要約してください。
+以下のニュース記事を分析して、必ずJSON形式のみで出力してください。
 
-要約に含めるべき観点（該当するもの）:
-- 株価・為替・金利・商品価格への影響
-- 中央銀行・金融政策の動向
-- 地政学リスク・政治的イベント
-- 主要企業の業績・M&A・経営動向
-- マクロ経済指標（GDP・CPI・雇用など）
+出力形式（JSONのみ・余計なテキスト不要）:
+{{
+  "summary": "日本語{SUMMARY_MAX_CHARS}文字以内の要約。数字・通貨・%を具体的に記載。",
+  "sentiment": "positive / negative / neutral のいずれか",
+  "companies": ["言及されている上場企業名（日本語）のリスト。なければ空リスト"],
+  "tags": ["該当するタグのリスト: 株価上昇材料 / 株価下落材料 / 為替 / 金利 / 金融政策 / 地政学 / 決算 / M&A / 経済指標 / その他"]
+}}
+
+分析観点:
+- 好材料（positive）: 業績好調・増配・自社株買い・好決算・買収・政策支援など
+- 悪材料（negative）: 業績悪化・減配・リコール・制裁・地政学リスク・利上げ懸念など
+- 中立（neutral）: 人事異動・一般的な政策発表・中立的な経済指標など
 
 ルール:
 - 日本語以外は日本語に翻訳して要約する
 - トレーダーが即座に判断できる簡潔な表現にする
-- 数字・通貨・パーセントは具体的に記載する
-- 要約文のみを出力し、前置きや説明は不要
+- 企業名は正式名称（例: トヨタ自動車、Apple Inc.）で記載
 
 ソース: {source}
 タイトル: {title}
@@ -41,20 +47,47 @@ def summarize_article(article: dict) -> str:
 
     message = client.messages.create(
         model=CLAUDE_MODEL,
-        max_tokens=300,
+        max_tokens=400,
         messages=[{"role": "user", "content": prompt}],
     )
-    return message.content[0].text.strip()
+
+    text = message.content[0].text.strip()
+
+    # JSON部分を抽出してパース
+    try:
+        # コードブロックが含まれる場合に対応
+        if "```" in text:
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+        result = json.loads(text)
+    except Exception:
+        # パース失敗時はフォールバック
+        result = {
+            "summary": text[:SUMMARY_MAX_CHARS],
+            "sentiment": "neutral",
+            "companies": [],
+            "tags": [],
+        }
+
+    return result
 
 
 def summarize_all(articles: list) -> list:
-    """全記事を要約する"""
+    """全記事を要約・分析する"""
     total = len(articles)
     for i, article in enumerate(articles, 1):
         print(f"[summarize] ({i}/{total}) {article['source']}: {article['title'][:40]}...")
         try:
-            article["ai_summary"] = summarize_article(article)
+            result = analyze_article(article)
+            article["ai_summary"] = result.get("summary", article["title"])
+            article["sentiment"] = result.get("sentiment", "neutral")
+            article["companies"] = result.get("companies", [])
+            article["tags"] = result.get("tags", [])
         except Exception as e:
             print(f"  → エラー: {e}")
             article["ai_summary"] = article["title"]
+            article["sentiment"] = "neutral"
+            article["companies"] = []
+            article["tags"] = []
     return articles
