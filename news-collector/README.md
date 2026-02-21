@@ -135,7 +135,7 @@ news-collector/
 ## 実行フロー
 
 ```
-RSS取得 → フィルタリング → AI要約 → HTMLレポート生成 → メール送信 → ブラウザ表示
+RSS取得 → フィルタリング → AI要約 → HTMLレポート生成 → メール送信 → アーカイブ整理 → ブラウザ表示
 ```
 
 ---
@@ -174,6 +174,14 @@ RESEND_API_KEY / RESEND_FROM_EMAIL / NOTIFY_EMAIL
 ### ブラウザ表示
 
 `output/` フォルダに `YYYYMMDD_HHMM_news.html` という形式で保存されます。実行のたびに新しいファイルが作成されます。
+
+### アーカイブ自動削除
+
+実行のたびに **7日以上前のHTMLレポートを自動削除** します。保持期間を変更したい場合は `main.py` の以下の値を編集してください。
+
+```python
+ARCHIVE_RETENTION_DAYS = 7  # 保持日数
+```
 
 ### レポートの構成
 
