@@ -45,15 +45,10 @@ def generate_html(articles: list) -> str:
         src = article["source"]
         by_source.setdefault(src, []).append(article)
 
-    # 好材料・悪材料の集計
-    positive = [a for a in articles if a.get("sentiment") == "positive"]
-    negative = [a for a in articles if a.get("sentiment") == "negative"]
+    # TOP3（先頭3件）
+    top3 = articles[:3]
 
-    # TOP3（sentimentがpositive/negativeのものを優先）
-    priority = [a for a in articles if a.get("sentiment") in ("positive", "negative")]
-    top3 = (priority + [a for a in articles if a not in priority])[:3]
-
-    html = _build_html(date_str, top3, by_source, articles, positive, negative)
+    html = _build_html(date_str, top3, by_source, articles)
 
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(html)
@@ -90,57 +85,20 @@ def _company_chips(companies: list) -> str:
     return f'<div class="tag-row">{chips}</div>'
 
 
-def _build_html(date_str: str, top3: list, by_source: dict, all_articles: list,
-                positive: list, negative: list) -> str:
+def _build_html(date_str: str, top3: list, by_source: dict, all_articles: list) -> str:
 
     # TOP3カード
     top3_cards = ""
     for article in top3:
         colors = SOURCE_COLORS.get(article["source"], DEFAULT_COLOR)
-        sentiment = article.get("sentiment", "neutral")
-        border_color = (
-            SENTIMENT_CONFIG["positive"]["color"] if sentiment == "positive"
-            else SENTIMENT_CONFIG["negative"]["color"] if sentiment == "negative"
-            else colors["badge"]
-        )
         top3_cards += f"""
-        <a href="{article['url']}" target="_blank" class="top-card" style="border-top: 4px solid {border_color};">
-            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-                {_source_badge(article['source'])}
-                {_sentiment_badge(sentiment)}
-            </div>
+        <a href="{article['url']}" target="_blank" class="top-card" style="border-top: 4px solid {colors['badge']};">
+            {_source_badge(article['source'])}
             <p class="card-summary">{article.get('ai_summary') or article['title']}</p>
             {_company_chips(article.get('companies', []))}
             {_tag_chips(article.get('tags', []))}
             <p class="card-title">{article['title']}</p>
         </a>"""
-
-    # 好材料・悪材料セクション
-    def _material_list(arts: list, sentiment: str) -> str:
-        if not arts:
-            return '<p style="padding:12px 16px;color:#aaa;font-size:0.85rem;">該当なし</p>'
-        rows = ""
-        for a in arts:
-            rows += f"""
-            <a href="{a['url']}" target="_blank" class="material-row">
-                {_source_badge(a['source'])}
-                <p class="article-summary">{a.get('ai_summary') or a['title']}</p>
-                {_company_chips(a.get('companies', []))}
-                {_tag_chips(a.get('tags', []))}
-            </a>"""
-        return rows
-
-    materials_section = f"""
-  <div class="materials-grid">
-    <div class="material-box positive-box">
-      <div class="material-header">▲ 好材料 <span class="count">{len(positive)}</span></div>
-      {_material_list(positive, 'positive')}
-    </div>
-    <div class="material-box negative-box">
-      <div class="material-header">▼ 悪材料 <span class="count">{len(negative)}</span></div>
-      {_material_list(negative, 'negative')}
-    </div>
-  </div>"""
 
     # ソース別タブ
     tab_buttons = '<button class="tab-btn active" onclick="showTab(\'all\', this)">すべて</button>'
@@ -168,8 +126,6 @@ def _build_html(date_str: str, top3: list, by_source: dict, all_articles: list,
   .stats {{ display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }}
   .stat-item {{ background: white; border-radius: 10px; padding: 12px 20px; font-size: 0.85rem; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }}
   .stat-item strong {{ font-size: 1.3rem; display: block; color: #1a1a2e; }}
-  .stat-positive strong {{ color: #2e7d32; }}
-  .stat-negative strong {{ color: #c62828; }}
 
   /* Section title */
   .section-title {{ font-size: 0.85rem; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; margin-top: 28px; }}
@@ -180,16 +136,6 @@ def _build_html(date_str: str, top3: list, by_source: dict, all_articles: list,
   .top-card:hover {{ transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }}
   .card-summary {{ font-size: 0.93rem; line-height: 1.6; color: #222; flex: 1; }}
   .card-title {{ font-size: 0.75rem; color: #999; border-top: 1px solid #eee; padding-top: 8px; }}
-
-  /* Materials */
-  .materials-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 8px; }}
-  @media (max-width: 700px) {{ .materials-grid {{ grid-template-columns: 1fr; }} }}
-  .material-box {{ background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }}
-  .material-header {{ padding: 12px 16px; font-size: 0.88rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }}
-  .positive-box .material-header {{ background: #e8f5e9; color: #2e7d32; }}
-  .negative-box .material-header {{ background: #ffebee; color: #c62828; }}
-  .material-row {{ display: block; padding: 12px 16px; border-top: 1px solid #f5f5f5; text-decoration: none; color: inherit; transition: background 0.15s; }}
-  .material-row:hover {{ background: #fafbff; }}
 
   /* Badges */
   .badge {{ display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; color: white; }}
@@ -228,16 +174,11 @@ def _build_html(date_str: str, top3: list, by_source: dict, all_articles: list,
 
   <div class="stats">
     <div class="stat-item"><strong>{len(all_articles)}</strong>件 取得</div>
-    <div class="stat-item stat-positive"><strong>{len(positive)}</strong>好材料</div>
-    <div class="stat-item stat-negative"><strong>{len(negative)}</strong>悪材料</div>
     {''.join(f'<div class="stat-item"><strong>{len(v)}</strong>{k}</div>' for k, v in by_source.items())}
   </div>
 
   <p class="section-title">注目ニュース TOP3</p>
   <div class="top3-grid">{top3_cards}</div>
-
-  <p class="section-title">好材料 / 悪材料</p>
-  {materials_section}
 
   <p class="section-title">全ニュース一覧</p>
   <div class="tabs">
