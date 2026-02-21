@@ -7,6 +7,7 @@ from config import NEWS_SOURCES
 from fetcher import fetch_articles
 from summarizer import summarize_all
 from reporter import generate_html
+from notifier import send_email
 
 
 def main():
@@ -28,7 +29,11 @@ def main():
     print("\n=== レポート生成 ===")
     filepath = generate_html(articles)
 
-    # 4. ブラウザで自動オープン
+    # 4. メール通知（HTML添付）
+    print("\n=== メール通知 ===")
+    send_email(filepath, articles)
+
+    # 5. ブラウザで自動オープン
     print("\n=== ブラウザで表示 ===")
     try:
         subprocess.run(["open", filepath], check=True)

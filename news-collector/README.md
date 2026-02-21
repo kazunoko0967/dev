@@ -12,16 +12,30 @@ cd news-collector
 pip install -r requirements.txt
 ```
 
-### 2. APIキーの設定
+### 2. 環境変数の設定
 ```bash
 export ANTHROPIC_API_KEY="your-api-key-here"
+
+# メール通知設定（SendGrid）
+export RESEND_API_KEY="re_xxxxxxxxxxxxxxxx"      # Resend APIキー
+export RESEND_FROM_EMAIL="your@email.com"         # 送信元（Resendで認証済みのアドレス）
+export NOTIFY_EMAIL="recipient@example.com"       # 送信先メールアドレス
 ```
 
-永続化する場合は `~/.zshrc` または `~/.bash_profile` に追記:
+永続化する場合は `~/.zshrc` に追記:
 ```bash
 echo 'export ANTHROPIC_API_KEY="your-api-key-here"' >> ~/.zshrc
+echo 'export RESEND_API_KEY="re_xxxxxxxxxxxxxxxx"' >> ~/.zshrc
+echo 'export RESEND_FROM_EMAIL="your@email.com"' >> ~/.zshrc
+echo 'export NOTIFY_EMAIL="recipient@example.com"' >> ~/.zshrc
 source ~/.zshrc
 ```
+
+#### Resend APIキーの取得方法
+1. [resend.com](https://resend.com/) にアカウント登録（無料・100通/日）
+2. API Keys → Create API Key
+3. 生成されたキーを `RESEND_API_KEY` に設定
+4. Domains → 送信元ドメインを認証（独自ドメインがない場合は `onboarding@resend.dev` が利用可能）
 
 ### 3. 手動実行
 ```bash

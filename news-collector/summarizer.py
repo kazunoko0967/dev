@@ -1,10 +1,15 @@
 """Claude Haiku 4.5 によるAI要約モジュール"""
 
 import anthropic
+import os
 
 from config import CLAUDE_MODEL, SUMMARY_MAX_CHARS
 
-client = anthropic.Anthropic()
+api_key = os.environ.get("ANTHROPIC_API_KEY")
+if not api_key:
+    raise EnvironmentError("ANTHROPIC_API_KEY が設定されていません。export ANTHROPIC_API_KEY='your-key' を実行してください。")
+
+client = anthropic.Anthropic(api_key=api_key)
 
 
 def summarize_article(article: dict) -> str:
