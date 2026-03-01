@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[Hook] ファイルが編集されました' >> /tmp/claude_hooks.log"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[Hook] Bashコマンド実行前' >> /tmp/claude_hooks.log"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -9,6 +9,10 @@ from summarizer import summarize_all
 from reporter import generate_html
 
 
+def hello_world():
+    print("Hello, World!")
+
+
 def main():
     print("=== ニュース収集開始 ===")
 
